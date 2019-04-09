@@ -7,15 +7,16 @@ output: html_document
 
 ####Background:
 
-Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement – a group of enthusiasts who take measurements about themselves. In this project, my goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. More information is available from the website here: http://groupware.les.inf.puc-rio.br/har (see the section on the Weight Lifting Exercise Dataset). 
+Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about
+personal activity relatively inexpensively. These type of devices are part of the quantified self movement – a group of   enthusiasts who take measurements about themselves. In this project, my goal will be to use data from accelerometers on the  belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5  different ways. More information is available from the website here: http://groupware.les.inf.puc-rio.br/har (see the  section on the Weight Lifting Exercise Dataset). 
 
 ####Goal:
-The goal of this project is to utilize machine learning to predict which one of the 5 ways (the classe variable in the dataset) the barbell lift falls under.  A training and test dataset has been provided.
+The goal of this project is to utilize machine learning to predict which one of the 5 ways (the classe variable in the  dataset) the barbell lift falls under.  A training and test dataset has been provided.
 
 ---
 ###Setup
 
-First, will setup the environment and download the dataset into R.  I noticed that the data contained values of "#DIV/0!", which I converted to NA upon importing the data.
+First, will setup the environment and download the dataset into R.  I noticed that the data contained values of "#DIV/0!",  which I converted to NA upon importing the data.
 
 ```{r, cache=TRUE, results='hide'}
 library(caret)
@@ -37,7 +38,7 @@ Test = read.csv("PMLtest.csv", na.strings = c('#DIV/0!', 'NA'))
 
 ####Data Exploration
 
-My next step was to explore the data, using summary and plotting a bunch of variables against eachother.  I cannot show all of the plots I used and all the output because of space constraints, but here is what I found:  (1) there are lots of missing data, some columns appear to only be populated at the end of the time window. (2) Some columns are all NA values, so those should be excluded (3) The num_window variable and classe have a 1:1 relationship so I maybe I can summarize the data by window. 
+My next step was to explore the data, using summary and plotting a bunch of variables against eachother.  I cannot show all  of the plots I used and all the output because of space constraints, but here is what I found:  (1) there are lots of  missing data, some columns appear to only be populated at the end of the time window. (2) Some columns are all NA values, so  those should be excluded (3) The num_window variable and classe have a 1:1 relationship so I maybe I can summarize the data  by window. 
 
 
 ```{r, results='hide', echo=FALSE}
@@ -52,11 +53,11 @@ table(Train$num_window, Train$classe)
 
 ####Pre Processing
 
-The data exploration phase revealed two problems that I must deal with (1) missing values and (2) the high-dimensionality of the dataset.  To begin with, I decided to "compress" each window to just one row that represented the mean values for the window.  I initially tried KNN imputation for missing values, but after understanding the context of the data just compressing the data to one row per window seemed like a good approach to get rid of missing values and simplify the dataset.  I also decided to throw out all the columns that were mostly NA and see how the model performs.  As you will read below, the model performed well even after throwing out all of these variables.  
+The data exploration phase revealed two problems that I must deal with (1) missing values and (2) the high-dimensionality of  the dataset.  To begin with, I decided to "compress" each window to just one row that represented the mean values for the  window.  I initially tried KNN imputation for missing values, but after understanding the context of the data just  compressing the data to one row per window seemed like a good approach to get rid of missing values and simplify the  dataset.  I also decided to throw out all the columns that were mostly NA and see how the model performs.  As you will read  below, the model performed well even after throwing out all of these variables.  
 
-For dimensionality reduction, I initially tried PCA.  I read the paper associated with this data, and I found that the researchers used a feature selection technique called "CFS", or correlation based feature selection.  However, random forests have built -in feature selection, so it is possible that PCA and CFS are not necessary.  Nevertheless I wanted to try different options for learning purposes.
+For dimensionality reduction, I initially tried PCA.  I read the paper associated with this data, and I found that the  researchers used a feature selection technique called "CFS", or correlation based feature selection.  However, random  forests have built -in feature selection, so it is possible that PCA and CFS are not necessary.  Nevertheless I wanted to  try different options for learning purposes.
 
-Below is the code I used to cleanup the training data, by: (1) removing NA and zero variance columns (2) summarized training data by window, and (3) partitioned the training data into an 80/20 train and validtion set, just so I could have another piece of data to assess model accuracy. 
+Below is the code I used to cleanup the training data, by: (1) removing NA and zero variance columns (2) summarized training  data by window, and (3) partitioned the training data into an 80/20 train and validtion set, just so I could have another  piece of data to assess model accuracy. 
 
 ```{r, warning=F, results='hide'}
 #Find columns that have near zero variance
@@ -69,7 +70,7 @@ KeepCol = function(x){
 NACols = names(Train)[sapply(Train, KeepCol)]
 #Build List of Columsn To Keep
 ColumnsToKeep = ColumnsToKeep[!(ColumnsToKeep %in% c('X', 'user_name', 'cvtd_timestamp', 'new_window', 
-                                                     'raw_timestamp_part_1', 'raw_timestamp_part_2', 'classe', NACols))]
+                                                     'raw_timestamp_part_1', 'raw_timestamp_part_2', 'classe', NACols))] 
 #Subset All Data To Exclude Offenders
 Train = Train[, c(ColumnsToKeep, 'classe')]
 Test = Test[, ColumnsToKeep]
@@ -104,11 +105,11 @@ CSXtrain = predict(CSx, XTrain)
 PCAx = princomp(CSXtrain)
 summary(PCAx)
 ```
-I surpressed the otuput of summary(PCAx), but what it shows me is that the first 12 prinicpal components explain 80% of the vairance of the dataset.  If I wanted to use PCA here, these first 12 might be a good cutoff to reduce dimensionality. 
+I surpressed the otuput of summary(PCAx), but what it shows me is that the first 12 prinicpal components explain 80% of the  vairance of the dataset.  If I wanted to use PCA here, these first 12 might be a good cutoff to reduce dimensionality.  
 
 ####Model Training
 
-I used the caret package and 10-fold cross validation for model evaluation and parameter tuning.  There are three versions of the model I tested (1) Random Forest Using PCA, (2) Random Forest withtout any priori feature selection, and (3) Random Forest Using feature selection from CFS.
+I used the caret package and 10-fold cross validation for model evaluation and parameter tuning.  There are three versions  of the model I tested (1) Random Forest Using PCA, (2) Random Forest withtout any priori feature selection, and (3) Random  Forest Using feature selection from CFS.
 
 Configure 10-fold cross validation and Pre-processing
 ```{r}
@@ -116,7 +117,7 @@ TC = trainControl(method = 'cv', number = 10)
 rfGrid = expand.grid(mtry = (1:15))
 ```
 
-1. Train random forest with PCA using default parameters.  Note that caret centers and scales data before doing pca.
+1. Train random forest with PCA using default parameters.  Note that caret centers and scales data before doing pca. 
 ```{r, warning=FALSE, results='hide', cache=TRUE, message=FALSE}
 PCAx = preProcess(XTrain, method = 'pca', thresh = .8)
 XTrainPCA = predict(PCAx, XTrain)
@@ -133,7 +134,7 @@ rf = train(classe~., data = MTrain, method = 'rf',
 3. Train Random Forest With CFS Feature Selection and Center/Scaling
 
 ```{r, warning=FALSE, results='hide', cache=TRUE, message=FALSE}
-rfCFS = train(classe~., data = MTrain[,c(RelevantFeatures, 'classe')], method = 'rf', preProcess = c('center', 'scale'), 
+rfCFS = train(classe~., data = MTrain[,c(RelevantFeatures, 'classe')], method = 'rf', preProcess = c('center', 'scale'),  
             trainControl = TC, tuneGrid = rfGrid)
 ```
 
@@ -147,10 +148,10 @@ resamps <- resamples(list(rf.plain= rf,
                           rf.cfs = rfCFS))
                           
 trellis.par.set(caretTheme())
-dotplot(resamps, main = 'Model Comparison: Random Forest With and Without Feature Selection', ylab = 'Model Used')
+dotplot(resamps, main = 'Model Comparison: Random Forest With and Without Feature Selection', ylab = 'Model Used')  
 ```
 
-**Conclusion:** It was best to use random forest "out of the box" (which is rf.plain in the above graph), compared to trying to do PCA or CFS first to further reduce dimensionality.  This is probably because random forests have built in feature selection.  Therefore, I am going to proceed with the rf model as the performance looks pretty good.   
+**Conclusion:** It was best to use random forest "out of the box" (which is rf.plain in the above graph), compared to trying  to do PCA or CFS first to further reduce dimensionality.  This is probably because random forests have built in feature  selection.  Therefore, I am going to proceed with the rf model as the performance looks pretty good.   
 
 ---
 
@@ -162,20 +163,20 @@ Inspect Tuning Paremeters:
 ```{r}
 library(ggplot2)
 library(reshape2)
-results = data.frame('mtry' = rfPCA$results$mtry, 'rfPCA' = rfPCA$results$Accuracy, 'rfCFS' = rfCFS$results$Accuracy, 'rf' = rf$results$Accuracy)
+results = data.frame('mtry' = rfPCA$results$mtry, 'rfPCA' = rfPCA$results$Accuracy, 'rfCFS' = rfCFS$results$Accuracy, 'rf' =   rf$results$Accuracy)
 Mresults = melt(results, id.var = 'mtry')
 #Get The Optimal Tuning Parameters Choosen By Caret
-OptimalParams = Mresults[(Mresults$variable == 'rf' & Mresults$mtry == rf$bestTune[1,1]) | (Mresults$variable == 'rfPCA' & Mresults$mtry == rfPCA$bestTune[1,1]) |
+OptimalParams = Mresults[(Mresults$variable == 'rf' & Mresults$mtry == rf$bestTune[1,1]) | (Mresults$variable == 'rfPCA' &  Mresults$mtry == rfPCA$bestTune[1,1]) |
 (Mresults$variable == 'rfCFS' & Mresults$mtry == rfCFS$bestTune[1,1]), ]
 names(OptimalParams) = c('mtry', 'Model.Type', 'Accuracy')
 #Graph Everything
 names(Mresults) = c('mtry', 'Model.Type', 'Accuracy')
-ggplot(data=Mresults, aes(x=mtry, y=Accuracy, group=Model.Type, color = Model.Type)) + geom_line() + ggtitle('Random Forest Models Compared -Tuning Parameters\n Dots Are Optimal Tuning Paremeters Choosen by Caret') + geom_point(data = OptimalParams, size = 5, label = OptimalParams$mtry) 
+ggplot(data=Mresults, aes(x=mtry, y=Accuracy, group=Model.Type, color = Model.Type)) + geom_line() + ggtitle('Random Forest  Models Compared -Tuning Parameters\n Dots Are Optimal Tuning Paremeters Choosen by Caret') + geom_point(data = OptimalParams, size = 5, label = OptimalParams$mtry) 
 ```
 
 
 The tuning parameters choosen by caret seem to be reasonable represented by the dots in the above graph. 
-I feel comfortable that 1-15 trees were a sufficient tuning range for this problem, given the shape of the curves here.  I also am still confident that the "plain rf"
+I feel comfortable that 1-15 trees were a sufficient tuning range for this problem, given the shape of the curves here.  I  also am still confident that the "plain rf"
  is the best model here and that the tuning paremeters didn't bias me in the wrong way.  
 
 ---
@@ -211,15 +212,3 @@ Here are the main takeaways from this study:
 
 
 
-© 2019 GitHub, Inc.
-Terms
-Privacy
-Security
-Status
-Help
-Contact GitHub
-Pricing
-API
-Training
-Blog
-About
