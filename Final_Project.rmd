@@ -12,7 +12,8 @@ dataset) the barbell lift falls under.  A training and test dataset has been pro
 ---
 ###Setup
 
-First, will setup the environment and download the dataset into R.  I noticed that the data contained values of "#DIV/0!",
+First, will setup the environment and download the dataset into R.  
+I noticed that the data contained values of "#DIV/0!",
 which I converted to NA upon importing the data.
 
 ```{r, cache=TRUE, results='hide'}
@@ -35,7 +36,8 @@ Test = read.csv("PMLtest.csv", na.strings = c('#DIV/0!', 'NA'))
 
 ####Data Exploration
 
-My next step was to explore the data, using summary and plotting a bunch of variables against eachother.  I cannot show all  of the plots I used and all the output because of space constraints, but here is what I found:  (1) there are lots of   missing data, some columns appear to only be populated at the end of the time window. (2) Some columns are all NA values, so   those should be excluded (3) The num_window variable and classe have a 1:1 relationship so I maybe I can summarize the  data  by window. 
+My next step was to explore the data, using summary and plotting a bunch of variables against eachother.  
+I cannot show all  of the plots I used and all the output because of space constraints, but here is what I found:  (1) there are lots of   missing data, some columns appear to only be populated at the end of the time window. (2) Some columns are all NA values, so   those should be excluded (3) The num_window variable and classe have a 1:1 relationship so I maybe I can summarize the  data  by window. 
 
 
 ```{r, results='hide', echo=FALSE}
