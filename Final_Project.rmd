@@ -1,22 +1,19 @@
 ---
 title: "The Quantified Self: Predicting Quality of Dumbell Lifts"
-author: "Hamel Husain"
-date: "November 17, 2014"
+author: "Miae Park"
+date: "April 05, 2019"
 output: html_document
 ---
 
-####Background:
-
-Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about 
-personal activity relatively inexpensively. These type of devices are part of the quantified self movement – a group of    enthusiasts who take measurements about themselves. In this project, my goal will be to use data from accelerometers on the  belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5   different ways. More information is available from the website here: http://groupware.les.inf.puc-rio.br/har (see the   section on the Weight Lifting Exercise Dataset). 
-
 ####Goal:
-The goal of this project is to utilize machine learning to predict which one of the 5 ways (the classe variable in the   dataset) the barbell lift falls under.  A training and test dataset has been provided.
+The goal of this project is to utilize machine learning to predict which one of the 5 ways (the classe variable in the
+dataset) the barbell lift falls under.  A training and test dataset has been provided.
 
 ---
 ###Setup
 
-First, will setup the environment and download the dataset into R.  I noticed that the data contained values of "#DIV/0!",   which I converted to NA upon importing the data.
+First, will setup the environment and download the dataset into R.  I noticed that the data contained values of "#DIV/0!",
+which I converted to NA upon importing the data.
 
 ```{r, cache=TRUE, results='hide'}
 library(caret)
@@ -166,13 +163,16 @@ trellis.par.set(caretTheme())
 dotplot(resamps, main = 'Model Comparison: Random Forest With and Without Feature Selection', ylab = 'Model Used')  
 ```
 
-**Conclusion:** It was best to use random forest "out of the box" (which is rf.plain in the above graph), compared to trying  to do PCA or CFS first to further reduce dimensionality.  This is probably because random forests have built in feature  selection.  Therefore, I am going to proceed with the rf model as the performance looks pretty good.   
+**Conclusion:** It was best to use random forest "out of the box" (which is rf.plain in the above graph), compared to trying
+to do PCA or CFS first to further reduce dimensionality.  This is probably because random forests have built in feature
+selection.  Therefore, I am going to proceed with the rf model as the performance looks pretty good.
 
 ---
 
 ##Model Tuning
-I want to make sure parameter tuning occured optimally, and that my arbritary choosen tuning grid of 1:15 seems to be ok. I initially used the default tuning 
-grid provided by caret, but after looking at the intial resuls decided to implement my own tuning grid of 1:15 trees.  
+I want to make sure parameter tuning occured optimally, and that my arbritary choosen tuning grid of 1:15 seems to be ok. I
+initially used the default tuning 
+grid provided by caret, but after looking at the intial resuls decided to implement my own tuning grid of 1:15 trees.
 
 Inspect Tuning Paremeters:
 ```{r}
@@ -190,15 +190,23 @@ ggplot(data=Mresults, aes(x=mtry, y=Accuracy, group=Model.Type, color = Model.Ty
 ```
 
 
-The tuning parameters choosen by caret seem to be reasonable represented by the dots in the above graph. 
-I feel comfortable that 1-15 trees were a sufficient tuning range for this problem, given the shape of the curves here.  I  also am still confident that the "plain rf"
- is the best model here and that the tuning paremeters didn't bias me in the wrong way.  
+The tuning parameters choosen by caret seem to be reasonable represented by the dots in the above graph.
+I feel comfortable that 1-15 trees were a sufficient tuning range for this problem, given the shape of the curves here. I
+also am still confident that the "plain rf"
+ is the best model here and that the tuning paremeters didn't bias me in the wrong way.
 
 ---
 
 ###Model Evaluation
-Now I want to estimate how the model will perform on a new dataset.  A reasonable estimate of this is the **mean accuracy returned by 10-fold cross validation, which was approximately 87.9% Accuracy. **  However, I also held out a validation set by partitioning the test set into an 80/20 split in the beginning of this exercise.  I did this with hopes of getting a more accurate estimate by testing my model against a dataset that it has never seen before.  
-However, **when I ran my model against the validation set, I achieved 100% accuracy!**   Even though the mean accuracy score from 10 fold CV was 87.9%, caret retrains the model over the entire training set once it finds its optimal tuning parameters.  So it is possible that the random forest became more accurate after seeing all the data in the training set.  However, I don't want to bank on my model achieving 100% accuracy and **am going to stay with a more conservative estimate of 87.9% obtained from 10-fold cross validation.**  
+Now I want to estimate how the model will perform on a new dataset.  A reasonable estimate of this is the **mean accuracy
+returned by 10-fold cross validation, which was approximately 87.9% Accuracy. **  However, I also held out a validation set
+by partitioning the test set into an 80/20 split in the beginning of this exercise.  I did this with hopes of getting a more
+accurate estimate by testing my model against a dataset that it has never seen before.
+However, **when I ran my model against the validation set, I achieved 100% accuracy!**   Even though the mean accuracy score
+from 10 fold CV was 87.9%, caret retrains the model over the entire training set once it finds its optimal tuning 
+parameters.  So it is possible that the random forest became more accurate after seeing all the data in the training set.
+However, I don't want to bank on my model achieving 100% accuracy and **am going to stay with a more conservative estimate
+of 87.9% obtained from 10-fold cross validation.** 
 
 Here is a readout of the final model's result on cross validation:
 
@@ -213,15 +221,19 @@ Below is the confusion matrix for my model run against the validation dataset.
 ```{r, warning=FALSE, message=FALSE}
 confusionMatrix(predict(rf, MValidate), MValidate$classe)
 ```
-Again, I think this is optimistic or maybe I just got lucky here on the validation set.  Therefore, I think its wise to stick with 87.9% accuracy. 
+Again, I think this is optimistic or maybe I just got lucky here on the validation set.  Therefore, I think its wise to
+stick with 87.9% accuracy. 
 
 ###Conclusion
 Here are the main takeaways from this study:
 
 - Pre processing was a very important step to clean up the data:  removing NA and Zero Variance Columns
-- Summarizing the data accross window simplified the analysis and further allowed me reduce dimensioanlity by getting rid of timestamps
+- Summarizing the data accross window simplified the analysis and further allowed me reduce dimensioanlity by getting rid of 
+timestamps
 - Random Forest was able to handle high dimensionality on its own without any dimensionality reduction techniques
-- Was able to achieve a cross validation mean accuracy of 87.9%, which is a reasonable estimate of how the model will perform on new data, especially given that the accuracy on the hold-out data was 100%.  
+- Was able to achieve a cross validation mean accuracy of 87.9%, which is a reasonable estimate of how the model will
+perform on new data, especially given that the accuracy on the hold-out data was 100%.
+
 
 
 
